@@ -2,6 +2,7 @@ import wget
 import optparse
 import os
 
+from helpers.exceptions import WgetError
 
 class UpgradeCeph(object):
     '''
@@ -16,13 +17,14 @@ class UpgradeCeph(object):
         if self.prelim_checks(cls.options.old_dir, cls.options.new_dir,
                               cls.options.odl_url):
             try:
-                self.wget_url(cls.options.odl_url)
-            except:
-                # upgrade_odl()
+                cls.odl_location = self.wget_url(cls.options.odl_url)
+            except WgetError:
+                upgrade_odl()
                 pass
 
     def wget_url(odl_url):
-        pass
+        odl_file_name = wget.download(odl_url)
+        return odl_file_name
 
     def prelim_checks(self, old_dir, new_dir, odl_url):
         if old_dir is None or new_dir is None or odl_url is None:
