@@ -1,8 +1,11 @@
 import wget
 import optparse
 import os
+import psutil
 
 from helpers.exceptions import WgetError
+from helpers.decorators import timeout
+
 
 class UpgradeCeph(object):
     '''
@@ -19,10 +22,21 @@ class UpgradeCeph(object):
             try:
                 cls.odl_location = self.wget_url(cls.options.odl_url)
             except WgetError:
-                upgrade_odl()
-                pass
+                print 'wget error for the odl_url.'
+                exit()
 
-    def wget_url(odl_url):
+            try:
+                self.sanity_checks()
+            except:
+                pass
+                
+    #def sanity_checks(self):
+        # check if old controller running
+
+    #    get_odl_pid = "ps aux | grep karaf | grep -v 'color' | tr -s ' ' | cut -f2 -d' '"
+    #    odl_pid = os.popen(odl_pid).read().strip()
+
+    def wget_url(self, odl_url):
         odl_file_name = wget.download(odl_url)
         return odl_file_name
 
