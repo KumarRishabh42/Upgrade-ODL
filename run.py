@@ -2,8 +2,9 @@ import wget
 import optparse
 import os
 import psutil
+import subprocess
 
-from helpers.exceptions import WgetError
+from helpers.exceptions import WgetError, TimedoutError
 from helpers.decorators import timeout
 
 
@@ -26,15 +27,22 @@ class UpgradeCeph(object):
                 exit()
 
             try:
-                self.sanity_checks()
-            except:
-                pass
-                
-    #def sanity_checks(self):
-        # check if old controller running
+                if self.old_odl_check():
+                    pass
+                else:
+                    pass
+            except TimedoutError:
+                print 'odl check timed out'
+                exit()
 
-    #    get_odl_pid = "ps aux | grep karaf | grep -v 'color' | tr -s ' ' | cut -f2 -d' '"
-    #    odl_pid = os.popen(odl_pid).read().strip()
+    @timeout(10)
+    def old_odl_check(self):
+        # check if old controller running right now we check if 8101 port is running
+        pid = 'netstat -tulpn | grep java | grep 8101'
+        (out, err) = subprocess.Popen(pid, stdout=subprocess.PIPE, shell=True, bufsize=0).communicate()
+        if not out:
+            return False
+        return True
 
     def wget_url(self, odl_url):
         odl_file_name = wget.download(odl_url)
