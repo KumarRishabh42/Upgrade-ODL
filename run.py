@@ -3,6 +3,7 @@ import optparse
 import os
 import psutil
 import subprocess
+import time
 
 from helpers.exceptions import WgetError, TimedoutError
 from helpers.decorators import timeout
@@ -27,13 +28,19 @@ class UpgradeCeph(object):
                 exit()
 
             try:
-                if self.old_odl_check():
-                    pass
-                else:
+                if not self.old_odl_check():
+                    self.run_old_odl(cls.options.old_dir)
                     pass
             except TimedoutError:
                 print 'odl check timed out'
                 exit()
+
+    @timeout(600)
+    def run_old_odl(self, old_odl):
+        old_odl_start = old_odl + '/bin/start'
+        subprocess.Popen([old_odl_start], stdout=subprocess.PIPE, shell=False, bufsize=0)
+        while not self.old_odl_check():
+            time.sleep(1)
 
     @timeout(10)
     def old_odl_check(self):
