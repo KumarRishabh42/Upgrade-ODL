@@ -1,7 +1,9 @@
 import wget
 import optparse
 import os
+import paramiko
 import psutil
+import re
 import subprocess
 import time
 
@@ -30,10 +32,29 @@ class UpgradeCeph(object):
             try:
                 if not self.old_odl_check():
                     self.run_old_odl(cls.options.old_dir)
-                    pass
+                    ssh_client = self.get_ssh_client()
+                    old_odl_feature_list = self.get_feature_list(ssh_client)
             except TimedoutError:
                 print 'odl check timed out'
                 exit()
+
+    @timeout(100)
+    def get_ssh_client(self, hostname='localhost', port=8101, username='karaf', password='karaf'):
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(hostname=hostname, port=port, username=username, password=password)
+        return ssh
+
+    def get_features_list(self, ssh):
+        feature_list = []
+        stdin, stdout, stderr = ssh.exec_command('feature:list --installed')
+        features = stdout.readlines()
+        features.pop(0)
+        features.pop(0)
+        for feature in features:
+            featur = re.sub('[\s+]', '', feature).split('|')
+            feature_list.append(featur[0] + '/' + featur[1])
+        return feature_list
 
     @timeout(600)
     def run_old_odl(self, old_odl):
