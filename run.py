@@ -34,9 +34,14 @@ class UpgradeCeph(object):
                     self.run_old_odl(cls.options.old_dir)
                     ssh_client = self.get_ssh_client()
                     old_odl_feature_list = self.get_feature_list(ssh_client)
+                    self.close_old_karaf_connection(ssh_client)
             except TimedoutError:
                 print 'odl check timed out'
                 exit()
+
+    @timeout(100)
+    def close_old_karaf_connection(self, ssh):
+        stdin, stdout, stderr = ssh.exec_command('shutdown -f')
 
     @timeout(100)
     def get_ssh_client(self, hostname='localhost', port=8101, username='karaf', password='karaf'):
