@@ -35,9 +35,16 @@ class UpgradeCeph(object):
                     ssh_client = self.get_ssh_client()
                     old_odl_feature_list = self.get_feature_list(ssh_client)
                     self.close_old_karaf_connection(ssh_client)
+                    while self.old_odl_check():
+                        time.sleep(1)
+                    self.move_new_odl_to_folder(cls.odl_location, cls.options.new_dir)
             except TimedoutError:
                 print 'odl check timed out'
                 exit()
+
+    def move_new_odl_to_folder(self, old_loc, new_dir):
+        old_loco = old_loc + "/*"
+        subprocess.Popen('mv ' + old_loco + ' ' + new_dir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
     @timeout(100)
     def close_old_karaf_connection(self, ssh):
