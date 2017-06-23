@@ -38,6 +38,7 @@ class UpgradeCeph(object):
                     while self.old_odl_check():
                         time.sleep(1)
                     self.move_new_odl_to_folder(cls.odl_location, cls.options.new_dir)
+                    self.run_old_odl(cls.options.new_dir)
             except TimedoutError:
                 print 'odl check timed out'
                 exit()
