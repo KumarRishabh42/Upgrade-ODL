@@ -109,3 +109,6 @@ class UpgradeCeph(object):
         parser.add_option('-n', '--new_dir', dest='new_dir', default=None)
         parser.add_option('-u', '--odl_url', dest='odl_url', default=None)
         return parser
+
+if __name__ == "__main__":
+     UpgradeCeph = UpgradeCeph()
