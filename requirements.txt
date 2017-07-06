@@ -1,8 +1,3 @@
-wget                                                                    
-optparse                                                                
-os                                                                      
-paramiko                                                                
-psutil                                                                  
-re                                                                      
-subprocess                                                              
-time
+wget
+paramiko
+psutil

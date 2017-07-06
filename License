@@ -1,4 +1,4 @@
-'''MIT License
+MIT License
 
 Copyright (c) 2017 Kumar Rishabh
 
@@ -18,33 +18,15 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.'''
-
-from functools import wraps, partial
-import signal
-
-from exceptions import TimeoutError
+SOFTWARE.
 
 
-def timeout(seconds=20):
 
-    def decorator(func):
-        def _handle_timeout(command, signum, frame):
-            raise TimeoutError("'%s' command did not return" % command)
 
-        def wrapper(*args, **kwargs):
-            if len(args) >= 3:
-                signal.signal(signal.SIGALRM, partial(_handle_timeout,
-                                                      args[2]))
-            else:
-                signal.signal(signal.SIGALRM, partial(_handle_timeout, None))
-            signal.alarm(seconds)
-            try:
-                result = func(*args, **kwargs)
-            finally:
-                signal.alarm(0)
-            return result
 
-        return wraps(func)(wrapper)
 
-    return decorator
+
+
+
+
+
