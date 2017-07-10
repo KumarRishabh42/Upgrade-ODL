@@ -83,9 +83,10 @@ class UpgradeODL(object):
         process = subprocess.Popen('mv ' + old_loco + ' ' + new_dir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         process.wait()
 
-    @timeout(100)
+    @timeout(600)
     def close_old_karaf_connection(self, ssh):
         stdin, stdout, stderr = ssh.exec_command('shutdown -f')
+        print stdout.readlines(), stderr.readlines()
 
     @timeout(600)
     def get_ssh_client(self, hostname='localhost', port=8101, username='karaf', password='karaf'):
@@ -118,12 +119,13 @@ class UpgradeODL(object):
         while not self.old_odl_check(is_new):
             time.sleep(1)
 
-    @timeout(10)
+    @timeout(600)
     def old_odl_check(self, is_new=False):
         # check if controller running right now we check if 8101 port is running
         pid = 'netstat -tulpn | grep java | grep 8101'
         FNULL = open(os.devnull, 'w')
         (out, err) = subprocess.Popen(pid, stdout=subprocess.PIPE, stderr=FNULL, shell=True, bufsize=0).communicate()
+        print out, err
         FNULL.close()
         if not out:
             if is_new:
@@ -138,6 +140,12 @@ class UpgradeODL(object):
             print 'old odl running ....'
         return True
 
+    def extract_file(self, zf, info, extract_dir ):
+        zf.extract( info.filename, path=extract_dir )
+        out_path = os.path.join( extract_dir, info.filename )
+        perm = info.external_attr >> 16L
+        os.chmod( out_path, perm )
+
     def wget_url(self, odl_url):
         # Assumes the file is zip file
 
@@ -146,7 +154,12 @@ class UpgradeODL(object):
 
         zip_ref = zipfile.ZipFile(odl_file_name, 'r')
         odl_file_location = odl_file_name.strip('.zip')
-        zip_ref.extractall('/tmp')
+
+        with zipfile.ZipFile(odl_file_name, 'r') as zf:
+            for info in zf.infolist():
+                self.extract_file(zf, info, '/tmp/')
+
+        # zip_ref.extractall('/tmp')
         return '/tmp/' + odl_file_location
 
     def prelim_checks(self, old_dir, new_dir, odl_url):
