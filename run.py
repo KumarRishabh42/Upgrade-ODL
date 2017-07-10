@@ -108,7 +108,7 @@ class UpgradeODL(object):
 
     @timeout(600)
     def run_old_odl(self, old_odl, is_new=False):
-        old_odl_start = old_odl + 'bin/start'
+        old_odl_start = old_odl + '/bin/start'
 
         print os.path.abspath(old_odl_start)
         print os.path.isfile(old_odl_start)
