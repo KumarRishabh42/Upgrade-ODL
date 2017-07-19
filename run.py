@@ -65,12 +65,18 @@ class UpgradeODL(object):
                 old_odl_feature_list = self.get_features_list(ssh_client)
                 print old_odl_feature_list
 
+                # self.install_features(old_odl_feature_list, ssh_client)
                 self.close_old_karaf_connection(ssh_client)
 
                 while self.old_odl_check():
                     time.sleep(1)
                 self.move_new_odl_to_folder(cls.odl_location, cls.options.new_dir)
                 self.run_old_odl(cls.options.new_dir, True)
+
+                # get new ssh client and install the features
+                new_ssh_client = self.get_ssh_client()
+                self.install_features(old_odl_feature_list, new_ssh_client)
+
             except TimedoutError:
                 print 'odl check timed out'
                 exit()
@@ -89,7 +95,7 @@ class UpgradeODL(object):
         print stdout.readlines(), stderr.readlines()
 
     @timeout(600)
-    def get_ssh_client(self, hostname='localhost', port=8101, username='karaf', password='karaf'):
+    def get_ssh_client(self, hostname='127.0.0.1', port=8101, username='karaf', password='karaf'):
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(hostname=hostname, port=port, username=username, password=password)
@@ -103,8 +109,13 @@ class UpgradeODL(object):
         features.pop(0)
         for feature in features:
             featur = re.sub('[\s+]', '', feature).split('|')
-            feature_list.append(featur[0] + '/' + featur[1])
+            feature_list.append(featur[0])
         return feature_list
+
+    def install_features(self, feature_list, ssh):
+        for feature in feature_list:
+            print 'installing ' + feature
+            stdin, stdout, stderr = ssh.exec_command('feature:install ' + feature)
 
     @timeout(600)
     def run_old_odl(self, old_odl, is_new=False):
