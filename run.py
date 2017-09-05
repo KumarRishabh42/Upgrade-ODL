@@ -77,12 +77,23 @@ class UpgradeODL(object):
                 new_ssh_client = self.get_ssh_client()
                 self.install_features(old_odl_feature_list, new_ssh_client)
 
+                # copy the config files
+                print 'copying config files'
+                self.copy_config_files(cls.options.old_dir, cls.options.new_dir)
+                print 'config file copying done'
+
             except TimedoutError:
                 print 'odl check timed out'
                 exit()
         else:
             print 'Not enough input given'
             exit()
+
+    def copy_config_files(self, old_dir, new_dir):
+        old_dir_etc = old_dir + '/etc/*'
+        new_dir_etc = new_dir + '/etc/'
+        process = subprocess.Popen('cp ' + old_dir_etc + ' ' + new_dir_etc, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        process.wait()
 
     def move_new_odl_to_folder(self, old_loc, new_dir):
         old_loco = old_loc + "/*"
