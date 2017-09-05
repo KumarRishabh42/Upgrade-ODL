@@ -66,6 +66,10 @@ class UpgradeODL(object):
                 print old_odl_feature_list
 
                 # self.install_features(old_odl_feature_list, ssh_client)
+                old_odl_pid = self.get_old_odl_pid()
+                print 'older pid to wait upon for complete shutdown'
+                print old_odl_pid
+
                 self.close_old_karaf_connection(ssh_client)
 
                 while self.old_odl_check():
@@ -88,6 +92,13 @@ class UpgradeODL(object):
         else:
             print 'Not enough input given'
             exit()
+
+    def get_old_odl_pid(self):
+        pid = "ps aux | grep karaf | grep -v grep | grep -v python | tr -s ' ' | cut -d' ' -f2"
+        # pid = "ps aux | grep karaf"
+        FNULL = open(os.devnull, 'w')
+        (out, err) = subprocess.Popen(pid, stdout=subprocess.PIPE, stderr=FNULL, shell=True, bufsize=0).communicate()
+        return out.split('\n')[0]
 
     def copy_config_files(self, old_dir, new_dir):
         old_dir_etc = old_dir + '/etc/*'
